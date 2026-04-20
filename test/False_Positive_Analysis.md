@@ -1,4 +1,4 @@
-# Bonus Task 3 — False Positive Analysis (WAF Over-Blocking)
+# False Positive Analysis (WAF Over-Blocking)
 
 ## FP-001 — Restaurant name containing an apostrophe must not be blocked
 
