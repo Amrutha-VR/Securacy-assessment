@@ -1,4 +1,4 @@
-
+# Automated Test Script (TC-004-02)
 import requests
 import time
 from collections import Counter
