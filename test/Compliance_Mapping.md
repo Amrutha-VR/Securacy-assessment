@@ -1,4 +1,4 @@
-
+# Compliance Mapping Table
 
 | Threat ID | Mitigation | PCI-DSS v4.0 Req | GDPR Article | SOC 2 Control | Why this test evidences the clause |
 |---|---|---|---|---|---|
