@@ -2,16 +2,16 @@
 
 | Threat | CVSS v3.1 | Business Impact | Priority |
 |---|---|---|---|
-| Broken Authentication | 9.1 | High — account takeover exposes saved cards, addresses, live driver GPS | 1 |
-| IDOR / BOLA | 8.8 | High — predictable order IDs leak names, phones, receipts across tenants | 2 |
-| Injection | 8.6 | High — DB compromise exposes all customers, restaurants, payout records | 3 |
-| Data Leakage | 8.2 | High — GDPR fines up to 4% global turnover, reputational damage | 4 |
-| Misconfiguration | 8.0 | High — open storage accounts, exposed APIM keys, public blobs | 5 |
-| Rate Limiting Absent | 7.8 | Medium/High — enables carding fraud, scraping, mealtime DDoS | 6 |
-| SSRF | 7.5 | Medium/High — Azure IMDS metadata access, internal service pivoting | 7 |
-| Supply Chain | 7.4 | High — compromised npm/pip package affects all deployments | 8 |
-| Insider Threat | 7.2 | High — privileged DB access, bulk export of customer PII | 9 |
-| Excessive Data Exposure | 6.9 | Medium — API responses returning unnecessary PII fields | 10 |
+| Broken Authentication | 9.1 | High —>account takeover exposes saved cards, addresses, live driver GPS | 1 |
+| IDOR / BOLA | 8.8 | High —> predictable order IDs leak names, phones, receipts across tenants | 2 |
+| Injection | 8.6 | High —> DB compromise exposes all customers, restaurants, payout records | 3 |
+| Data Leakage | 8.2 | High —> GDPR fines up to 4% global turnover, reputational damage | 4 |
+| Misconfiguration | 8.0 | High —> open storage accounts, exposed APIM keys, public blobs | 5 |
+| Rate Limiting Absent | 7.8 | Medium/High —> enables carding fraud, scraping, mealtime DDoS | 6 |
+| SSRF | 7.5 | Medium/High —> Azure IMDS metadata access, internal service pivoting | 7 |
+| Supply Chain | 7.4 | High —> compromised npm/pip package affects all deployments | 8 |
+| Insider Threat | 7.2 | High —> privileged DB access, bulk export of customer PII | 9 |
+| Excessive Data Exposure | 6.9 | Medium —> API responses returning unnecessary PII fields | 10 |
 
 **Fix First Justification**
 
