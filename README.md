@@ -86,13 +86,13 @@ pip install requests
 Update the BASE_URL value inside:
 
 ```text
-scripts/bonus_task_2_rate_limit_test.py
+scripts/rate_limit_test.py
 ```
 
 Run:
 
 ```bash
-python scripts/bonus_task_2_rate_limit_test.py
+python scripts/rate_limit_test.py
 ```
 
 The script will:
