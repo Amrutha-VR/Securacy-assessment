@@ -1,27 +1,29 @@
-# Automated Test Script (TC-004-02)
 import requests
 import time
 from collections import Counter
 from datetime import datetime
+from email.utils import parsedate_to_datetime
 
-# ── Configuration ─────────────────────────────────────────────────────────────
-BASE_URL = "https://foodapp.example.com"
-LOGIN_PATH = "/api/auth/login"
-TOTAL_REQUESTS = 101
-REQUEST_DELAY_SECONDS = 0.5   # ~50s total — fits within the 60s window
-TIMEOUT = 5
-# ──────────────────────────────────────────────────────────────────────────────
+# ── Configuration ──────────────────────────────────────────
+BASE_URL            = "https://foodapp.example.com"
+LOGIN_PATH          = "/api/auth/login"
+TOTAL_REQUESTS      = 101
+REQUEST_DELAY_SECS  = 0.5   # 101 requests @ 0.5s = ~50s < 60s window
+TIMEOUT             = 5
+# ───────────────────────────────────────────────────────────
 
-URL = BASE_URL + LOGIN_PATH
-results = []
-errors = []
-retry_after_value = None
+URL             = BASE_URL + LOGIN_PATH
+results         = []
+errors          = []
+retry_after_raw = None
+remaining_on_429 = None
+start_time      = time.time()
 
 print("=" * 60)
 print("TC-004-02 — Rate Limit Enforcement Validation")
-print(f"Target : {URL}")
-print(f"Total  : {TOTAL_REQUESTS} requests @ {REQUEST_DELAY_SECONDS}s intervals")
-print(f"Started: {datetime.utcnow().isoformat()}Z")
+print(f"Target  : {URL}")
+print(f"Requests: {TOTAL_REQUESTS} @ {REQUEST_DELAY_SECS}s intervals (~{TOTAL_REQUESTS * REQUEST_DELAY_SECS:.0f}s total)")
+print(f"Started : {datetime.utcnow().isoformat()}Z")
 print("=" * 60)
 
 for i in range(1, TOTAL_REQUESTS + 1):
@@ -34,55 +36,83 @@ for i in range(1, TOTAL_REQUESTS + 1):
         code = resp.status_code
         results.append(code)
 
-        # Capture Retry-After from the first 429 response
-        if code == 429 and retry_after_value is None:
-            retry_after_value = resp.headers.get("Retry-After")
-            print(f"Request {i:03d}: {code}  <-- THROTTLED | Retry-After: {retry_after_value}")
+        if code == 429 and retry_after_raw is None:
+            retry_after_raw   = resp.headers.get("Retry-After")
+            remaining_on_429  = resp.headers.get("X-RateLimit-Remaining", "not present")
+            print(f"Request {i:03d}: {code}  <-- THROTTLED "
+                  f"| Retry-After: {retry_after_raw} "
+                  f"| X-RateLimit-Remaining: {remaining_on_429}")
         else:
             print(f"Request {i:03d}: {code}")
 
-        time.sleep(REQUEST_DELAY_SECONDS)
+        time.sleep(REQUEST_DELAY_SECS)
 
     except Exception as ex:
         results.append("ERR")
         errors.append(str(ex))
         print(f"Request {i:03d}: ERROR — {ex}")
 
-# ── Assertions ────────────────────────────────────────────────────────────────
-counts = Counter(results)
+elapsed = time.time() - start_time
 
-# Assertion A: No 429 in the first 100 requests
+# ── Assertion helpers ──────────────────────────────────────
+
+def parse_retry_after(value):
+    """Accept both integer-seconds and HTTP-date Retry-After formats."""
+    if value is None:
+        return False
+    if str(value).strip().isdigit():
+        return int(value) > 0
+    try:
+        parsed = parsedate_to_datetime(str(value))
+        return parsed > datetime.utcnow().replace(tzinfo=parsed.tzinfo)
+    except Exception:
+        return False
+
+# ── Assertions ─────────────────────────────────────────────
+
 first_100 = results[:100]
-assertion_a = (429 not in first_100)
 
-# Assertion B: Request 101 returns 429
+# A: No 429 in first 100 requests
+assertion_a      = (429 not in first_100)
+errors_in_first  = first_100.count("ERR")
+
+# B: Request 101 is 429
 assertion_b = (len(results) >= 101 and results[100] == 429)
 
-# Assertion C: Retry-After is a positive integer
-if retry_after_value is not None:
-    assertion_c = str(retry_after_value).strip().isdigit() and int(retry_after_value) > 0
-else:
-    assertion_c = False
+# C: Retry-After header is valid
+assertion_c = parse_retry_after(retry_after_raw)
 
-all_passed = assertion_a and assertion_b and assertion_c
+# D: All 101 requests completed within the 60s window
+assertion_d = (elapsed < 60)
 
-# ── Summary ───────────────────────────────────────────────────────────────────
+all_passed = assertion_a and assertion_b and assertion_c and assertion_d
+
+# ── Summary ────────────────────────────────────────────────
+
+counts = Counter(results)
+
 print("\n" + "=" * 60)
 print("SUMMARY")
 print("=" * 60)
-print(f"Total requests sent : {len(results)}")
+print(f"Total requests      : {len(results)}")
+print(f"Elapsed time        : {elapsed:.1f}s")
 print(f"Network errors      : {len(errors)}")
-print("")
-print("Response code breakdown:")
+
+if errors_in_first > 0:
+    print(f"  WARNING: {errors_in_first} errors in first 100 — Assertion A may be unreliable")
+
+print("\nResponse code breakdown:")
 for code, count in sorted(counts.items(), key=lambda x: str(x[0])):
     print(f"  {code}: {count}")
-print("")
-print(f"Assertion A — Requests 1-100 never throttled : {'PASS' if assertion_a else 'FAIL'}")
-print(f"Assertion B — Request 101 returns 429        : {'PASS' if assertion_b else 'FAIL'}")
-print(f"Assertion C — Retry-After is positive int    : {'PASS' if assertion_c else 'FAIL'}")
-print(f"Retry-After value captured                   : {retry_after_value}")
-print("")
-print("=" * 60)
+
+print(f"\nRetry-After captured          : {retry_after_raw}")
+print(f"X-RateLimit-Remaining on 429  : {remaining_on_429}")
+
+print(f"\nAssertion A — No 429 in first 100 requests : {'PASS' if assertion_a else 'FAIL'}")
+print(f"Assertion B — Request 101 returns 429      : {'PASS' if assertion_b else 'FAIL'}")
+print(f"Assertion C — Retry-After is valid         : {'PASS' if assertion_c else 'FAIL'}")
+print(f"Assertion D — All requests within 60s      : {'PASS' if assertion_d else 'FAIL'}")
+
+print("\n" + "=" * 60)
 print("FINAL RESULT:", "PASS" if all_passed else "FAIL")
 print("=" * 60)
-```
