@@ -265,7 +265,7 @@ grep "429" test_output_tc004_05.txt | head -3
 
 **Pass Criteria**
 
-- First `429` appears on or before request 201.
+- First `429` appears on request 201.
 - No `429` before request 200.
 
 **Policy Snippet**
