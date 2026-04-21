@@ -72,7 +72,7 @@ curl -i -X GET "https://foodapp.example.com/api/admin/users" \
 
 **Compliance**
 
-- PCI-DSS v4.0 Req 7.2.5 — privileged access must be enforced to only authorized roles.
+- PCI-DSS v4.0 Req 7.2.5 - privileged access must be enforced to only authorized roles.
 
 ---
 
