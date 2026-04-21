@@ -86,7 +86,7 @@ curl -i -X GET "https://foodapp.example.com/api/admin/users" \
 1. Send a POST to the token endpoint to obtain a Customer JWT for `customer01`. Extract the `access_token` field from the JSON response.
 2. Decode the JWT payload and confirm the `roles` claim contains `"Customer"` only — not `"Admin"`.
 3. Send a GET request to `/api/admin/users` using the Customer JWT in the `Authorization: Bearer` header.
-4. Record the HTTP status code and confirm the response body contains no admin data — only an error or empty body.
+4. Record the HTTP status code and confirm the response body contains no admin data only an error or empty body.
 5. Open Log Analytics and run the KQL query from Evidence to Collect. Confirm an `AuthorizationDenied` event appears within 2 minutes with `principal = customer01` and `resource = /api/admin/users`.
 
 **Tools/Commands**
@@ -125,7 +125,7 @@ curl -i -X GET "https://foodapp.example.com/api/admin/users" \
 
 **Compliance**
 
-- SOC 2 CC6.1 — logical access restricted based on job function.
+- SOC 2 CC6.1 - logical access restricted based on job function.
 
 ---
 
